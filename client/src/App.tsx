@@ -1,19 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-
-export interface Lender {
-  name: string;
-  rules: Rule[];
-}
-
-export interface Rule {
-  field: string;
-  operator: string;
-  value: number;
-}
+import Calculator from "./components/Calculator";
+import { Lender } from "./types";
 
 function App() {
-  const [data, setData] = useState<Lender[]>([]);
+  const title = "Loan calculator";
+  const [, setData] = useState<Lender[]>([]);
 
   useEffect(() => {
     const fetchLenders = async () => {
@@ -24,13 +16,9 @@ function App() {
   }, []);
 
   return (
-    <div className="App">
-      <h1>Hello world!</h1>
-      <ul>
-        {data.map((x) => (
-          <li key={x.name}>{x.name}</li>
-        ))}
-      </ul>
+    <div className="App max-w-5xl mx-auto">
+      <h1 className="text-2xl font-semibold text-center pt-12 pb-6">{title}</h1>
+      <Calculator />
     </div>
   );
 }

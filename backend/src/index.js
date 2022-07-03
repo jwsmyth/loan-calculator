@@ -20,7 +20,6 @@ app.post("/submit", async (req, res) => {});
 // App listening...
 app.listen(port, () => {
   console.log(`Server listening on ${port}...`);
-  console.log(lenders);
 });
 
 /**

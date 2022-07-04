@@ -28,7 +28,7 @@ export const lenders = [
     name: "Svenske Bank",
     rules: [
       {
-        field: "repaymentYears",
+        field: "duration",
         operator: "lessThan",
         value: 8,
       },

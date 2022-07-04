@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import ScaleLoader from "react-spinners/ScaleLoader";
 
 import {
   MIN_AMOUNT,
@@ -7,20 +8,30 @@ import {
   MAX_DURATION,
   AMOUNT_INTERVAL,
   DURATION_INTERVAL,
-  INTEREST,
+  SEND_APPLICATION,
 } from "../consts";
-import { MonthlyCalculation } from "../types";
+import {
+  formatAmount,
+  formatDuration,
+  calculateMonthlyCost,
+} from "../utils/helperFunctions";
+import { SendApplicationResponseData } from "../interfaces";
+import ApplyButton from "./ApplyButton";
+import CalculatorInput from "./CalculatorInput";
+import MonthlyCost from "./MonthlyCost";
+import API from "../api";
 
 function Calculator() {
-  const [amount, setAmount] = useState<number>(250000);
+  const [amount, setAmount] = useState<any>("250000");
   const [duration, setDuration] = useState<number>(14);
-  const [monthlyCost, setMonthlyCost] = useState<number>();
+  const [monthlyCost, setMonthlyCost] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const monthlyCostLabel = "Månadskostnad";
   const loanAmountLabel = "Lånebelopp";
-  const krSuffix = "kr";
-  const repaymentYearsLabel = "Återbetalningstid";
-  const repaymentYearsSuffix = "år";
+  const amountSuffix = "kr";
+  const durationLabel = "Återbetalningstid";
+  const durationSuffix = "år";
   const ctaLabel = "Ansök nu";
 
   useEffect(() => {
@@ -29,12 +40,12 @@ function Calculator() {
 
   const addAmount = (): void => {
     if (amount >= MAX_AMOUNT) return;
-    setAmount((prev) => prev + AMOUNT_INTERVAL);
+    // setAmount((prev) => prev + AMOUNT_INTERVAL);
   };
 
   const removeAmount = (): void => {
     if (amount <= MIN_AMOUNT) return;
-    setAmount((prev) => prev - AMOUNT_INTERVAL);
+    // setAmount((prev) => prev - AMOUNT_INTERVAL);
   };
 
   const addDuration = (): void => {
@@ -47,96 +58,109 @@ function Calculator() {
     setDuration((prev) => prev - DURATION_INTERVAL);
   };
 
-  const formatAmount = (x: number): string => {
-    return `${x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ")} ${krSuffix}`;
+  const sendApplication = async (): Promise<SendApplicationResponseData> => {
+    setLoading(true);
+    const response = await API.post(SEND_APPLICATION, { amount, duration });
+    setLoading(false);
+    return response.data;
   };
 
-  const formatDuration = (x: number): string => {
-    return `${x} ${repaymentYearsSuffix}`;
+  const updateValue = (e: any) => {
+    setAmount(e.target.value);
   };
 
-  const calculateMonthlyCost = ({ amount, duration }: MonthlyCalculation) => {
-    const months = duration * 12;
-    return Math.round(
-      (amount * (INTEREST / 100)) /
-        12 /
-        (1 - Math.pow(1 + INTEREST / 100 / 12, months * -1))
+  const [test, setTest] = useState("25000");
+
+  function handleFocus(e: any) {
+    const value = e.target.value;
+
+    if (value !== null) {
+      const parsedNumber = parseLocaleNumber(value, "sv-SE");
+      setTest(String(parsedNumber));
+    }
+  }
+  function handleBlur(e: any) {
+    const value = e.target.value;
+    if (value !== null) {
+      const parsedValue = parseNumberToLocaleCurrency(value, "sv-SE", "kr");
+      setTest(parsedValue);
+    }
+    if (value === "") {
+      setTest("0");
+    }
+  }
+
+  const parseLocaleNumber = (stringNumber: string, locale: string): number => {
+    const thousandSeparator = Intl.NumberFormat(locale)
+      .format(11111)
+      .replace(/\p{Number}/gu, "");
+    const decimalSeparator = Intl.NumberFormat(locale)
+      .format(1.1)
+      .replace(/\p{Number}/gu, "");
+
+    return parseFloat(
+      stringNumber &&
+        stringNumber
+          .replace(new RegExp("\\" + thousandSeparator, "g"), "")
+          .replace(new RegExp("\\" + decimalSeparator), ".")
+          .replace(new RegExp("[^0-9.]"), "")
     );
+  };
+
+  const parseNumberToLocaleCurrency = (
+    value: number,
+    locale: string,
+    currency: string
+  ): string => {
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+    }).format(value);
   };
 
   return (
     <div className="border shadow-lg p-8 rounded-md max-w-md mx-auto">
-      <div className="monthly-cost">
-        <h1 className="monthly-cost-label font-semibold text-xl">
-          {monthlyCostLabel}
-        </h1>
-        <div className="monthly-cost-value">
-          <span className="text-3xl font-extralight italic">
-            {monthlyCost ? formatAmount(monthlyCost) : null}
-          </span>
-        </div>
-      </div>
-      <div className="amount py-4">
-        <h2 className="font-semibold py-2">{loanAmountLabel}</h2>
+      <MonthlyCost
+        label={monthlyCostLabel}
+        formattedMonthlyCost={
+          monthlyCost ? formatAmount(monthlyCost, amountSuffix) : null
+        }
+      />
 
-        <div className="flex">
-          <div className="self-center">
-            <button className="calculator-button" onClick={removeAmount}>
-              <span>-</span>
-            </button>
-          </div>
+      <input
+        type="text"
+        value={test}
+        onFocus={(e: any) => handleFocus(e)}
+        onBlur={(e: any) => handleBlur(e)}
+      />
+      <CalculatorInput
+        label={loanAmountLabel}
+        value={formatAmount(amount, amountSuffix)}
+        changeValue={[addAmount, removeAmount]}
+        minMaxValues={[MIN_AMOUNT, MAX_AMOUNT]}
+        update={updateValue}
+      />
 
-          <div className="flex-1 px-4">
-            <input
-              readOnly
-              className="p-4 rounded-md border-2 w-full text-lg"
-              value={formatAmount(amount)}
-              min={MIN_AMOUNT}
-              max={MAX_AMOUNT}
-            />
-          </div>
+      <CalculatorInput
+        label={durationLabel}
+        value={formatDuration(duration, durationSuffix)}
+        changeValue={[addDuration, removeDuration]}
+        minMaxValues={[MIN_DURATION, MAX_DURATION]}
+        update={updateValue}
+      />
 
-          <div className="self-center">
-            <button className="calculator-button" onClick={addAmount}>
-              <span>+</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <h2 className="font-semibold py-2">{repaymentYearsLabel}</h2>
-
-        <div className="flex">
-          <div className="self-center">
-            <button className="calculator-button" onClick={removeDuration}>
-              <span>-</span>
-            </button>
-          </div>
-
-          <div className="flex-1 px-4">
-            <input
-              readOnly
-              className="p-4 rounded-md border-2 w-full text-lg"
-              value={formatDuration(duration)}
-              min={MIN_DURATION}
-              max={MAX_DURATION}
-            />
-          </div>
-
-          <div className="self-center">
-            <button className="calculator-button" onClick={addDuration}>
-              <span>+</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="pt-12">
-        <button className="cta-button apply-button">
-          <span className="italic pl-2">{ctaLabel}</span>
-          <span>&#8594;</span>
-        </button>
+      <ApplyButton
+        label={ctaLabel}
+        handleSubmit={sendApplication}
+        enabled={!loading}
+      />
+      <div className="flex justify-center items-center">
+        <ScaleLoader
+          color={"#000000"}
+          loading={loading}
+          cssOverride={{ position: "absolute" }}
+        />
       </div>
     </div>
   );

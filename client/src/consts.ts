@@ -9,3 +9,6 @@ export const MAX_AMOUNT = 600000;
 export const AMOUNT_INTERVAL = 5000;
 
 export const INTEREST = 5.77;
+
+// API ENDPOINTS
+export const SEND_APPLICATION = "/submit";

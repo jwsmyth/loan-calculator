@@ -1,19 +1,7 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
 import Calculator from "./components/Calculator";
-import { Lender } from "./types";
 
-function App() {
+const App = () => {
   const title = "Loan calculator";
-  const [, setData] = useState<Lender[]>([]);
-
-  useEffect(() => {
-    const fetchLenders = async () => {
-      const { data } = await axios.get("/lenders");
-      setData(data);
-    };
-    fetchLenders();
-  }, []);
 
   return (
     <div className="App max-w-5xl mx-auto">
@@ -21,6 +9,6 @@ function App() {
       <Calculator />
     </div>
   );
-}
+};
 
 export default App;

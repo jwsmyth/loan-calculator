@@ -3,7 +3,6 @@ type InputProps = {
   value: string;
   changeValue: Array<() => void>;
   minMaxValues: Array<number>;
-  update: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 const CalculatorInput = ({
@@ -11,7 +10,6 @@ const CalculatorInput = ({
   value,
   changeValue,
   minMaxValues,
-  update,
 }: InputProps) => {
   const [addValue, removeValue] = changeValue;
   const [minValue, maxValue] = minMaxValues;
@@ -29,9 +27,9 @@ const CalculatorInput = ({
 
         <div className="flex-1 px-4">
           <input
+            readOnly
             className="p-4 rounded-md border-2 w-full text-lg"
             value={value}
-            onChange={(e) => update(e)}
             min={minValue}
             max={maxValue}
           />

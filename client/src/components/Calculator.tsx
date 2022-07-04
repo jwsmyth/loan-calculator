@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import ScaleLoader from "react-spinners/ScaleLoader";
 
 import {
@@ -22,7 +22,7 @@ import MonthlyCost from "./MonthlyCost";
 import API from "../api";
 
 function Calculator() {
-  const [amount, setAmount] = useState<any>("250000");
+  const [amount, setAmount] = useState<number>(250000);
   const [duration, setDuration] = useState<number>(14);
   const [monthlyCost, setMonthlyCost] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
@@ -40,12 +40,12 @@ function Calculator() {
 
   const addAmount = (): void => {
     if (amount >= MAX_AMOUNT) return;
-    // setAmount((prev) => prev + AMOUNT_INTERVAL);
+    setAmount((prev) => prev + AMOUNT_INTERVAL);
   };
 
   const removeAmount = (): void => {
     if (amount <= MIN_AMOUNT) return;
-    // setAmount((prev) => prev - AMOUNT_INTERVAL);
+    setAmount((prev) => prev - AMOUNT_INTERVAL);
   };
 
   const addDuration = (): void => {
@@ -65,60 +65,6 @@ function Calculator() {
     return response.data;
   };
 
-  const updateValue = (e: any) => {
-    setAmount(e.target.value);
-  };
-
-  const [test, setTest] = useState("25000");
-
-  function handleFocus(e: any) {
-    const value = e.target.value;
-
-    if (value !== null) {
-      const parsedNumber = parseLocaleNumber(value, "sv-SE");
-      setTest(String(parsedNumber));
-    }
-  }
-  function handleBlur(e: any) {
-    const value = e.target.value;
-    if (value !== null) {
-      const parsedValue = parseNumberToLocaleCurrency(value, "sv-SE", "kr");
-      setTest(parsedValue);
-    }
-    if (value === "") {
-      setTest("0");
-    }
-  }
-
-  const parseLocaleNumber = (stringNumber: string, locale: string): number => {
-    const thousandSeparator = Intl.NumberFormat(locale)
-      .format(11111)
-      .replace(/\p{Number}/gu, "");
-    const decimalSeparator = Intl.NumberFormat(locale)
-      .format(1.1)
-      .replace(/\p{Number}/gu, "");
-
-    return parseFloat(
-      stringNumber &&
-        stringNumber
-          .replace(new RegExp("\\" + thousandSeparator, "g"), "")
-          .replace(new RegExp("\\" + decimalSeparator), ".")
-          .replace(new RegExp("[^0-9.]"), "")
-    );
-  };
-
-  const parseNumberToLocaleCurrency = (
-    value: number,
-    locale: string,
-    currency: string
-  ): string => {
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency,
-      minimumFractionDigits: 0,
-    }).format(value);
-  };
-
   return (
     <div className="border shadow-lg p-8 rounded-md max-w-md mx-auto">
       <MonthlyCost
@@ -128,18 +74,11 @@ function Calculator() {
         }
       />
 
-      <input
-        type="text"
-        value={test}
-        onFocus={(e: any) => handleFocus(e)}
-        onBlur={(e: any) => handleBlur(e)}
-      />
       <CalculatorInput
         label={loanAmountLabel}
         value={formatAmount(amount, amountSuffix)}
         changeValue={[addAmount, removeAmount]}
         minMaxValues={[MIN_AMOUNT, MAX_AMOUNT]}
-        update={updateValue}
       />
 
       <CalculatorInput
@@ -147,7 +86,6 @@ function Calculator() {
         value={formatDuration(duration, durationSuffix)}
         changeValue={[addDuration, removeDuration]}
         minMaxValues={[MIN_DURATION, MAX_DURATION]}
-        update={updateValue}
       />
 
       <ApplyButton

@@ -21,12 +21,13 @@ app.listen(port, () => {
 app.post("/submit", async (req, res) => {
   const applicationData = req.body;
   const activeLenders = run(applicationData, lenders);
+  let applications = [];
 
   for (const lender of activeLenders) {
-    await sendToBank(lender);
+    applications.push(await sendToBank(lender));
   }
 
-  res.status(200).send("Success!");
+  res.status(200).send(applications);
 });
 
 /**

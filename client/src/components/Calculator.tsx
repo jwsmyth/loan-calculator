@@ -9,12 +9,10 @@ import {
   AMOUNT_INTERVAL,
   DURATION_INTERVAL,
   SEND_APPLICATION,
+  START_AMOUNT,
+  START_DURATION,
 } from "../consts";
-import {
-  formatAmount,
-  formatDuration,
-  calculateMonthlyCost,
-} from "../utils/helperFunctions";
+import { formatAmount, calculateMonthlyCost } from "../utils/helperFunctions";
 import { SendApplicationResponseData } from "../interfaces";
 import ApplyButton from "./ApplyButton";
 import CalculatorInput from "./CalculatorInput";
@@ -22,16 +20,16 @@ import MonthlyCost from "./MonthlyCost";
 import API from "../api";
 
 function Calculator() {
-  const [amount, setAmount] = useState<number>(250000);
-  const [duration, setDuration] = useState<number>(14);
+  const [amount, setAmount] = useState<number>(START_AMOUNT);
+  const [duration, setDuration] = useState<number>(START_DURATION);
   const [monthlyCost, setMonthlyCost] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(false);
 
   const monthlyCostLabel = "Månadskostnad";
   const loanAmountLabel = "Lånebelopp";
-  const amountSuffix = "kr";
+  const amountSuffix = " kr";
   const durationLabel = "Återbetalningstid";
-  const durationSuffix = "år";
+  const durationSuffix = " år";
   const ctaLabel = "Ansök nu";
 
   useEffect(() => {
@@ -48,6 +46,10 @@ function Calculator() {
     setAmount((prev) => prev - AMOUNT_INTERVAL);
   };
 
+  const handleAmountChange = (newAmount: number): void => {
+    setAmount(newAmount);
+  };
+
   const addDuration = (): void => {
     if (duration >= MAX_DURATION) return;
     setDuration((prev) => prev + DURATION_INTERVAL);
@@ -58,11 +60,16 @@ function Calculator() {
     setDuration((prev) => prev - DURATION_INTERVAL);
   };
 
+  const handleDurationChange = (newDuration: number): void => {
+    setDuration(newDuration);
+  };
+
   const sendApplication = async (): Promise<SendApplicationResponseData> => {
     setLoading(true);
-    const response = await API.post(SEND_APPLICATION, { amount, duration });
+    const { data } = await API.post(SEND_APPLICATION, { amount, duration });
+    console.info(data);
     setLoading(false);
-    return response.data;
+    return data;
   };
 
   return (
@@ -76,16 +83,22 @@ function Calculator() {
 
       <CalculatorInput
         label={loanAmountLabel}
-        value={formatAmount(amount, amountSuffix)}
-        changeValue={[addAmount, removeAmount]}
+        value={amount}
+        buttonClick={[addAmount, removeAmount]}
+        manualChange={handleAmountChange}
         minMaxValues={[MIN_AMOUNT, MAX_AMOUNT]}
+        interval={AMOUNT_INTERVAL}
+        suffix={amountSuffix}
       />
 
       <CalculatorInput
         label={durationLabel}
-        value={formatDuration(duration, durationSuffix)}
-        changeValue={[addDuration, removeDuration]}
+        value={duration}
+        buttonClick={[addDuration, removeDuration]}
+        manualChange={handleDurationChange}
         minMaxValues={[MIN_DURATION, MAX_DURATION]}
+        interval={DURATION_INTERVAL}
+        suffix={durationSuffix}
       />
 
       <ApplyButton

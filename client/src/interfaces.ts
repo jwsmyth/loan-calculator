@@ -15,6 +15,6 @@ export interface MonthlyCalculation {
 }
 
 export interface SendApplicationResponseData {
-  amount: number;
-  duration: number;
+  name: string;
+  response: string;
 }

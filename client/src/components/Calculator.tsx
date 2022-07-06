@@ -64,7 +64,7 @@ function Calculator() {
     setDuration(newDuration);
   };
 
-  const sendApplication = async (): Promise<SendApplicationResponseData> => {
+  const sendApplication = async (): Promise<SendApplicationResponseData[]> => {
     setLoading(true);
     const { data } = await API.post(SEND_APPLICATION, { amount, duration });
     console.info(data);

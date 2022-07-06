@@ -1,6 +1,8 @@
+import { SendApplicationResponseData } from "../interfaces";
+
 type ButtonProps = {
   label: string;
-  handleSubmit: any;
+  handleSubmit: () => Promise<SendApplicationResponseData[]>;
   enabled: boolean;
 };
 

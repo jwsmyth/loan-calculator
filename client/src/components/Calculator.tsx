@@ -37,12 +37,18 @@ function Calculator() {
   }, [amount, duration]);
 
   const addAmount = (): void => {
-    if (amount >= MAX_AMOUNT) return;
+    if (amount >= MAX_AMOUNT - AMOUNT_INTERVAL) {
+      setAmount(MAX_AMOUNT);
+      return;
+    }
     setAmount((prev) => prev + AMOUNT_INTERVAL);
   };
 
   const removeAmount = (): void => {
-    if (amount <= MIN_AMOUNT) return;
+    if (amount <= MIN_AMOUNT + AMOUNT_INTERVAL) {
+      setAmount(MIN_AMOUNT);
+      return;
+    }
     setAmount((prev) => prev - AMOUNT_INTERVAL);
   };
 

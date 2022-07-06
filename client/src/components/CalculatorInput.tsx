@@ -73,8 +73,6 @@ const CalculatorInput = ({
             onBlur={toggleSuffix}
             step={interval}
             suffix={addSuffix ? suffix : ""}
-            min={minValue}
-            max={maxValue}
           />
         </div>
 
